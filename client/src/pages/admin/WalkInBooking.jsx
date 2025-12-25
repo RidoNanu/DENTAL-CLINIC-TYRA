@@ -243,7 +243,7 @@ const WalkInBooking = ({ isModal = false, onClose }) => {
                 name: patientDetails.name.trim(),
                 email: patientDetails.email.trim(),
                 phone: patientDetails.phone.trim(),
-                date_of_birth: patientDetails.date_of_birth || null,
+                date_of_birth: patientDetails.date_of_birth ? new Date(patientDetails.date_of_birth).toISOString() : null,
                 gender: patientDetails.gender || null,
                 notes: patientDetails.notes.trim() || null
             };
