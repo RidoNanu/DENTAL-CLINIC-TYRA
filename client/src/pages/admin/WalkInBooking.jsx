@@ -256,7 +256,7 @@ const WalkInBooking = ({ isModal = false, onClose }) => {
                 patient_id: patient.id,
                 service_id: selections.service.id,
                 shift: selections.shift.id, // 'morning' or 'evening'
-                appointment_at: selections.date.iso,
+                appointment_at: new Date(selections.date.iso).toISOString(),
                 status: 'confirmed', // Walk-in bookings are immediately confirmed
                 notes: patientDetails.notes.trim() || null
             };
