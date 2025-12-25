@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import Loader from '../ui/Loader'; // Assuming you have a Loader component
 
 const ProtectedRoute = ({ children }) => {
-    const { user, loading } = useAuth();
+    const { isAuthenticated, loading } = useAuth();
     const location = useLocation();
 
     if (loading) {
@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    if (!user) {
+    if (!isAuthenticated) {
         // Redirect to login page but save the attempted location
         return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
