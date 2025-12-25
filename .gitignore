@@ -48,3 +48,4 @@ Thumbs.db
 *.swo
 *~
 .cache
+server/.env

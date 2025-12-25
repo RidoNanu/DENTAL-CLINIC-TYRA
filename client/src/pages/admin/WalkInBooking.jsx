@@ -146,10 +146,15 @@ const WalkInBooking = ({ isModal = false, onClose }) => {
     };
 
     // Utility: Check if date is in the past
-    const isPastDate = (isoDate) => {
+    const isPastDate = (dateStr) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const checkDate = new Date(isoDate);
+
+        // Parse YYYY-MM-DD manually to ensure local time
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const checkDate = new Date(y, m - 1, d);
+        checkDate.setHours(0, 0, 0, 0);
+
         return checkDate < today;
     };
 
@@ -157,7 +162,13 @@ const WalkInBooking = ({ isModal = false, onClose }) => {
     const dates = Array.from({ length: 30 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() + i);
-        const dateString = d.toISOString().split('T')[0];
+
+        // Use local time components to avoid UTC shifts
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+
         return {
             day: d.toLocaleDateString('en-US', { weekday: 'short' }),
             date: d.getDate(),
