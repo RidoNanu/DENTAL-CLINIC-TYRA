@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Layouts
 import MainLayout from './layouts/MainLayout';
@@ -45,7 +46,11 @@ const App = () => {
                         <Route path="/admin/login" element={<AdminLogin />} />
 
                         {/* Admin Protected Routes */}
-                        <Route path="/admin" element={<AdminLayout />}>
+                        <Route path="/admin" element={
+                            <ProtectedRoute>
+                                <AdminLayout />
+                            </ProtectedRoute>
+                        }>
                             <Route path="dashboard" element={<AdminDashboard />} />
                             <Route path="appointments" element={<ManageAppointments />} />
                             <Route path="patients" element={<ManagePatients />} />
