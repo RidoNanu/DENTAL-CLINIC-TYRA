@@ -1,0 +1,137 @@
+// NEW BOOKING MODAL CODE TO ADD
+
+{/* New Booking Modal */}
+<Modal
+    isOpen={activeModal === 'newBooking'}
+    onClose={() => {
+        setActiveModal(null);
+        setBookingForm({
+            patientId: '',
+            serviceId: '',
+            appointmentDate: '',
+            appointmentTime: '',
+           notes: ''
+        });
+    }}
+    title="Create New Booking"
+    maxWidth="600px"
+>
+    <form onSubmit={handleBookingSubmit}>
+        <div style={{ display: 'grid', gap: '1.25rem' }}>
+            {/* Patient Selection */}
+            <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem', color: '#334155' }}>
+                    Patient *
+                </label>
+                < style={{ width: '100%' }}
+                    value={bookingForm.patientId}
+                    onChange={(e) => setBookingForm({ ...bookingForm, patientId: e.target.value })}
+                    required
+                    disabled={patients.length === 0}
+                >
+                    <option value="">
+                        {patients.length === 0 ? 'Loading patients...' : 'Select a patient'}
+                    </option>
+                    {patients.map(patient => (
+                        <option key={patient.id} value={patient.id}>
+                            {patient.name} - {patient.email}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Service Selection */}
+            <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem', color: '#334155' }}>
+                    Service *
+                </label>
+                <select style={{ width: '100%' }}
+                    value={bookingForm.serviceId}
+                    onChange={(e) => setBookingForm({ ...bookingForm, serviceId: e.target.value })}
+                    required
+                    disabled={services.length === 0}
+                >
+                    <option value="">
+                        {services.length === 0 ? 'Loading services...' : 'Select a service'}
+                    </option>
+                    {services.map(service => (
+                        <option key={service.id} value={service.id}>
+                            {service.name} - ₹{service.price}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Date and Time */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem', color: '#334155' }}>
+                        Date *
+                    </label>
+                    <input
+                        type="date"
+                        style={{ width: '100%' }}
+                        value={bookingForm.appointmentDate}
+                        onChange={(e) => setBookingForm({ ...bookingForm, appointmentDate: e.target.value })}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                    />
+                </div>
+                <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem', color: '#334155' }}>
+                        Time *
+                    </label>
+                    <input
+                        type="time"
+                        style={{ width: '100%' }}
+                        value={bookingForm.appointmentTime}
+                        onChange={(e) => setBookingForm({ ...bookingForm, appointmentTime: e.target.value })}
+                        required
+                    />
+                </div>
+            </div>
+
+            {/* Notes (Optional) */}
+            <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem', color: '#334155' }}>
+                    Notes (Optional)
+                </label>
+                <textarea
+                    style={{ width: '100%', minHeight: '80px', resize: 'vertical' }}
+                    value={bookingForm.notes}
+                    onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                    placeholder="Any special notes or requirements..."
+                />
+            </div>
+
+            {/* Submit Buttons */}
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                        setActiveModal(null);
+                        setBookingForm({
+                            patientId: '',
+                            serviceId: '',
+                            appointmentDate: '',
+                            appointmentTime: '',
+                            notes: ''
+                        });
+                    }}
+                    disabled={isSubmittingBooking}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    type="submit"
+                    variant="primary"
+                    isLoading={isSubmittingBooking}
+                    disabled={isSubmittingBooking}
+                >
+                    {isSubmittingBooking ? 'Creating...' : 'Create Booking'}
+                </Button>
+            </div>
+        </div>
+    </form>
+</Modal>

@@ -1,0 +1,255 @@
+import React from 'react';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import BackgroundGradient from '../../components/common/BackgroundGradient';
+
+import { ArrowUp, ArrowDown, Users, Calendar, DollarSign, Activity, CheckCircle, XCircle, MoreHorizontal } from 'lucide-react';
+
+const Dashboard = () => {
+    const styles = {
+        grid: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '2.5rem',
+        },
+        kpiCard: {
+            padding: '1.5rem',
+            position: 'relative',
+            overflow: 'hidden',
+        },
+        kpiHeader: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: '1rem',
+        },
+        kpiIcon: (color) => ({
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            backgroundColor: color.bg,
+            color: color.text,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        }),
+        kpiValue: {
+            fontSize: '2.25rem',
+            fontWeight: '800',
+            color: '#0f172a', // Slate 900
+            lineHeight: 1,
+            marginBottom: '0.5rem',
+            letterSpacing: '-0.02em',
+        },
+        kpiLabel: {
+            color: '#64748b', // Slate 500
+            fontSize: '0.95rem',
+            fontWeight: '500',
+        },
+        trend: (positive) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem',
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            color: positive ? '#16a34a' : '#dc2626',
+            backgroundColor: positive ? '#dcfce7' : '#fee2e2',
+            padding: '2px 8px',
+            borderRadius: '1rem',
+            marginTop: '0.5rem',
+            width: 'fit-content'
+        }),
+        sectionHeader: {
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+        },
+        table: {
+            width: '100%',
+            borderCollapse: 'separate',
+            borderSpacing: '0',
+        },
+        th: {
+            textAlign: 'left',
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid #e2e8f0',
+            color: '#64748b',
+            fontSize: '0.8rem',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            backgroundColor: '#f8fafc', // Light gray background for header
+        },
+        td: {
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid #e2e8f0',
+            color: '#334155',
+            fontWeight: '500',
+            fontSize: '0.95rem',
+            verticalAlign: 'middle'
+        },
+        row: {
+            transition: 'background-color 0.2s',
+            cursor: 'default'
+        }
+    };
+
+    const stats = [
+        {
+            label: "Today's Appointments",
+            value: "18",
+            trend: "+12%",
+            positive: true,
+            icon: <Calendar size={24} />,
+            color: { bg: '#e0f2fe', text: '#0284c7' }
+        },
+        {
+            label: "Pending Requests",
+            value: "5",
+            trend: "+2 New",
+            positive: false, // Attention needed
+            icon: <Activity size={24} />,
+            color: { bg: '#fff7ed', text: '#ea580c' } // Orange
+        },
+        {
+            label: "Total Patients",
+            value: "1,240",
+            trend: "+48mo",
+            positive: true,
+            icon: <Users size={24} />,
+            color: { bg: '#f0fdf4', text: '#16a34a' }
+        },
+        {
+            label: "Revenue (Mtd)",
+            value: "$42k",
+            trend: "+8%",
+            positive: true,
+            icon: <DollarSign size={24} />,
+            color: { bg: '#fdf4ff', text: '#c026d3' } // Fuchsia/Purple
+        },
+    ];
+
+    const pendingAppointments = [
+        { id: 1, patient: 'Alice Smith', treatment: 'Root Canal', date: 'Oct 25', time: '14:00' },
+        { id: 2, patient: 'Bob Jones', treatment: 'Consultation', date: 'Oct 25', time: '15:30' },
+        { id: 3, patient: 'Charlie Day', treatment: 'Cleaning', date: 'Oct 26', time: '09:00' },
+    ];
+
+    return (
+        <div className="animate-fade-in">
+            <div style={styles.sectionHeader}>
+                <div>
+                    <h1 style={{ fontSize: '1.875rem', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.025em' }}>Dashboard</h1>
+                    <p style={{ color: '#64748b' }}>Operations overview and daily metrics</p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <Button variant="outline" size="small"><Calendar size={16} className="mr-2" /> Today</Button>
+                    <Button variant="primary" size="small">+ New Booking</Button>
+                </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div style={styles.grid}>
+                {stats.map((stat, index) => (
+                    <Card key={index} style={styles.kpiCard} className="hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                        <div style={styles.kpiHeader}>
+                            <div style={styles.kpiIcon(stat.color)}>
+                                {stat.icon}
+                            </div>
+                            <div style={styles.trend(stat.positive)}>
+                                {stat.positive ? <ArrowUp size={14} /> : <ArrowUp size={14} style={{ transform: 'rotate(180deg)' }} />}
+                                {stat.trend}
+                            </div>
+                        </div>
+                        <div style={styles.kpiValue}>{stat.value}</div>
+                        <div style={styles.kpiLabel}>{stat.label}</div>
+                    </Card>
+                ))}
+                <tr>
+                    <th style={styles.th}>Patient</th>
+                    <th style={styles.th}>Details</th>
+                    <th style={styles.th}>Schedule</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {pendingAppointments.map(apt => (
+                    <tr key={apt.id} style={styles.row} className="hover:bg-slate-50">
+                        <td style={styles.td}>
+                            <div style={{ fontWeight: '600', color: '#0f172a' }}>{apt.patient}</div>
+                        </td>
+                        <td style={styles.td}>
+                            <div style={{ color: 'var(--color-primary)', fontWeight: '500', fontSize: '0.9rem' }}>{apt.treatment}</div>
+                        </td>
+                        <td style={styles.td}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{ padding: '4px 8px', borderRadius: '6px', backgroundColor: '#f1f5f9', fontSize: '0.85rem', fontWeight: '600' }}>
+                                    {apt.date}
+                                </div>
+                                <span style={{ color: '#94a3b8' }}>at</span>
+                                <div style={{ fontWeight: '600' }}>{apt.time}</div>
+                            </div>
+                        </td>
+                        <td style={{ ...styles.td, textAlign: 'right' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                <Button size="small" variant="primary" style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <CheckCircle size={18} />
+                                </Button>
+                                <Button size="small" variant="ghost" style={{ width: '32px', height: '32px', padding: 0, borderRadius: '8px', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fef2f2' }}>
+                                    <XCircle size={18} />
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+                </Card >
+
+    {/* Quick Actions Column */ }
+    < div className = "flex" style = {{ flexDirection: 'column', gap: '1.5rem' }}>
+        <Card style={{ padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1.25rem', color: '#0f172a' }}>Quick Actions</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <Button variant="outline" fullWidth style={{ justifyContent: 'flex-start', textAlign: 'left', fontWeight: '600', height: '3rem' }}>
+                    <Users size={18} className="mr-2 text-slate-400" /> New Patient
+                </Button>
+                <Button variant="outline" fullWidth style={{ justifyContent: 'flex-start', textAlign: 'left', fontWeight: '600', height: '3rem' }}>
+                    <Calendar size={18} className="mr-2 text-slate-400" /> Block Schedule
+                </Button>
+                <Button variant="outline" fullWidth style={{ justifyContent: 'flex-start', textAlign: 'left', fontWeight: '600', height: '3rem' }}>
+                    <Activity size={18} className="mr-2 text-slate-400" /> Generate Report
+                </Button>
+            </div>
+        </Card>
+
+{/* System Status - Cleaned up */ }
+<Card style={{ backgroundColor: '#0f172a', color: 'white', border: 'none' }}>
+    <div className="flex items-center justify-between mb-4">
+        <h3 style={{ fontSize: '1rem', fontWeight: '600', color: '#f8fafc' }}>System Health</h3>
+        <Activity size={16} className="text-emerald-400" />
+    </div>
+    <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between text-sm">
+            <span className="text-slate-400">Database</span>
+            <span className="flex items-center gap-2 text-emerald-400 font-medium">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div> Operational
+            </span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+            <span className="text-slate-400">API Gateway</span>
+            <span className="flex items-center gap-2 text-emerald-400 font-medium">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div> Operational
+            </span>
+        </div>
+    </div>
+</Card>
+                </div >
+            </div >
+        </div >
+    );
+};
+
+export default Dashboard;

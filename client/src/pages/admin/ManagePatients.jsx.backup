@@ -1,0 +1,644 @@
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Search, Filter, Eye, Calendar, MoreHorizontal, User, Phone, Mail, X, ChevronDown, FileText, FileSpreadsheet } from 'lucide-react';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import { getPatients, createPatient } from '../../services/patientService';
+
+const ManagePatients = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newPatient, setNewPatient] = useState({
+        name: '',
+        phone: '',
+        email: '',
+        notes: ''
+    });
+
+    // API state management
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isCreating, setIsCreating] = useState(false);
+
+    // Fetch patients on component mount
+    useEffect(() => {
+        fetchPatients();
+    }, []);
+
+    const fetchPatients = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await getPatients();
+            setPatients(data || []);
+        } catch (err) {
+            console.error('Error fetching patients:', err);
+            setError(err.message || 'Failed to load patients');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddPatient = async () => {
+        try {
+            setIsCreating(true);
+            const patientData = {
+                name: newPatient.name,
+                phone: newPatient.phone,
+                email: newPatient.email || null,
+                medical_history: newPatient.notes || null
+            };
+
+            const createdPatient = await createPatient(patientData);
+
+            // Add new patient to the list
+            setPatients([createdPatient, ...patients]);
+
+            // Close modal and reset form
+            setIsModalOpen(false);
+            setNewPatient({ name: '', phone: '', email: '', notes: '' });
+        } catch (err) {
+            console.error('Error creating patient:', err);
+            alert('Failed to create patient: ' + (err.message || 'Unknown error'));
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+    const styles = {
+        pageHeader: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '2rem',
+        },
+        title: {
+            fontSize: '1.875rem',
+            fontWeight: '800',
+            color: '#0f172a',
+            letterSpacing: '-0.025em',
+        },
+        toolbarContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '2rem',
+        },
+        searchWrapper: {
+            position: 'relative',
+            width: '100%',
+            maxWidth: '500px',
+        },
+        searchInput: {
+            display: 'block',
+            width: '100%',
+            height: '48px',
+            padding: '0 16px 0 48px',
+            borderRadius: '12px',
+            border: isSearchFocused ? '1px solid #3b82f6' : '1px solid #e2e8f0',
+            boxShadow: isSearchFocused ? '0 0 0 4px rgba(59, 130, 246, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            outline: 'none',
+            fontSize: '0.95rem',
+            backgroundColor: '#ffffff',
+            color: '#0f172a',
+            transition: 'all 0.2s ease',
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            boxSizing: 'border-box'
+        },
+        searchIcon: {
+            position: 'absolute',
+            left: '1rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: isSearchFocused ? '#3b82f6' : '#94a3b8',
+            transition: 'color 0.2s',
+            pointerEvents: 'none',
+        },
+        actionGroup: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+        },
+        actionButton: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            padding: '0.75rem 1rem',
+            backgroundColor: 'white',
+            border: '1px solid #e2e8f0',
+            borderRadius: '0.75rem',
+            color: '#64748b',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            transition: 'all 0.2s',
+        },
+        table: {
+            width: '100%',
+            borderCollapse: 'separate',
+            borderSpacing: '0',
+        },
+        th: {
+            textAlign: 'left',
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid #e2e8f0',
+            color: '#64748b',
+            fontSize: '0.8rem',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            backgroundColor: '#f8fafc',
+        },
+        td: {
+            padding: '1rem 1.5rem',
+            borderBottom: '1px solid #e2e8f0',
+            color: '#334155',
+            fontWeight: '500',
+            fontSize: '0.95rem',
+            verticalAlign: 'middle',
+        },
+        row: {
+            transition: 'background-color 0.2s',
+        },
+        statusBadge: (status) => {
+            const colors = {
+                'Active': { bg: '#dcfce7', text: '#16a34a' },
+                'New': { bg: '#dfe7fd', text: '#4361ee' },
+                'Inactive': { bg: '#f1f5f9', text: '#64748b' },
+            };
+            const style = colors[status] || colors.Active;
+            return {
+                padding: '0.25rem 0.75rem',
+                borderRadius: '9999px',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                backgroundColor: style.bg,
+                color: style.text,
+                display: 'inline-flex',
+                alignItems: 'center',
+            };
+        },
+        inputGroup: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+        },
+        inputLabel: {
+            display: 'block',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            color: '#0f172a',
+        },
+        modalInput: {
+            width: '100%',
+            padding: '0.75rem 1rem',
+            borderRadius: '0.75rem',
+            border: '1px solid #e2e8f0',
+            backgroundColor: '#f8fafc',
+            fontSize: '0.95rem',
+            outline: 'none',
+            color: '#0f172a',
+            transition: 'all 0.2s',
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            boxSizing: 'border-box'
+        }
+    };
+
+    const [filterStatus, setFilterStatus] = useState('All');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isExportOpen, setIsExportOpen] = useState(false);
+
+    const handleExportCSV = () => {
+        const headers = ["ID", "Name", "Email", "Phone", "Status", "Total Visits", "Last Visit"];
+        const csvContent = [
+            headers.join(","),
+            ...patients.map(p => [
+                p.id,
+                `"${p.name}"`,
+                p.email,
+                p.phone,
+                p.status,
+                p.totalVisits,
+                p.lastVisit
+            ].join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "patient_records.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        setIsExportOpen(false);
+    };
+
+    const handleExportPDF = () => {
+        window.print();
+        setIsExportOpen(false);
+    };
+
+
+
+    const handleFilterToggle = () => {
+        const statuses = ['All', 'Active', 'New', 'Inactive'];
+        const currentIndex = statuses.indexOf(filterStatus);
+        setFilterStatus(statuses[(currentIndex + 1) % statuses.length]);
+    };
+
+    const filteredPatients = patients.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.phone.includes(searchTerm);
+        const matchesFilter = filterStatus === 'All' || p.status === filterStatus;
+        return matchesSearch && matchesFilter;
+    });
+
+    return (
+        <div className="animate-fade-in">
+            {/* Header */}
+            <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h1 style={styles.title}>Patient Records</h1>
+                    <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Manage and view clinic patient history</p>
+                </div>
+                <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+                    <User size={18} className="mr-2" /> Add Patient
+                </Button>
+            </div>
+
+            {/* Error State */}
+            {error && (
+                <Card style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem', border: '1px solid #fee2e2', backgroundColor: '#fef2f2' }}>
+                    <p style={{ color: '#dc2626', fontWeight: '600', marginBottom: '0.5rem' }}>Error loading patients</p>
+                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem' }}>{error}</p>
+                    <Button onClick={fetchPatients} size="small">Try Again</Button>
+                </Card>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+                <Card style={{ padding: '4rem', textAlign: 'center' }}>
+                    <div style={{ display: 'inline-block', width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <p style={{ color: '#64748b', marginTop: '1rem' }}>Loading patients...</p>
+                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </Card>
+            )}
+
+            {/* Search and Actions Toolbar (Inline Styles) */}
+            <div style={styles.toolbarContainer}>
+                {/* Search Input */}
+                <div style={styles.searchWrapper}>
+                    <div style={styles.searchIcon}>
+                        <Search size={18} />
+                    </div>
+                    <input
+                        type="text"
+                        style={styles.searchInput}
+                        placeholder="Search patients by name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setIsSearchFocused(false)}
+                    />
+                </div>
+
+                {/* Secondary Actions */}
+                <div style={styles.actionGroup}>
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            style={{
+                                ...styles.actionButton,
+                                paddingRight: '0.75rem',
+                                gap: '0.75rem',
+                                minWidth: '200px',
+                                justifyContent: 'space-between'
+                            }}
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Filter size={16} color="#64748b" />
+                                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Filter:</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#0f172a' }}>
+                                    {filterStatus === 'All' ? 'All Statuses' : filterStatus}
+                                </span>
+                                <ChevronDown size={16} color="#94a3b8" />
+                            </div>
+                        </button>
+
+                        {isFilterOpen && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                marginTop: '0.5rem',
+                                width: '200px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                                border: '1px solid #e2e8f0',
+                                zIndex: 50,
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{ padding: '0.5rem' }}>
+                                    <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase' }}>Filter by Status</div>
+                                    {['All', 'Active', 'New', 'Inactive'].map((status) => (
+                                        <button
+                                            key={status}
+                                            onClick={() => {
+                                                setFilterStatus(status);
+                                                setIsFilterOpen(false);
+                                            }}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                width: '100%',
+                                                padding: '0.6rem 0.75rem',
+                                                fontSize: '0.9rem',
+                                                color: filterStatus === status ? '#3b82f6' : '#334155',
+                                                backgroundColor: filterStatus === status ? '#eff6ff' : 'transparent',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                textAlign: 'left',
+                                                fontWeight: filterStatus === status ? '600' : '500',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (filterStatus !== status) e.currentTarget.style.backgroundColor = '#f8fafc';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (filterStatus !== status) e.currentTarget.style.backgroundColor = 'transparent';
+                                            }}
+                                        >
+                                            {status === 'All' ? 'All Patients' : status}
+                                            {filterStatus === status && <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></div>}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            style={styles.actionButton}
+                            onClick={() => setIsExportOpen(!isExportOpen)}
+                        >
+                            <MoreHorizontal size={16} />
+                            <span>Export</span>
+                        </button>
+
+                        {isExportOpen && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                marginTop: '0.5rem',
+                                minWidth: '200px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                                border: '1px solid #e2e8f0',
+                                zIndex: 50,
+                                overflow: 'hidden',
+                                padding: '0.5rem'
+                            }}>
+                                <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase' }}>Export Options</div>
+
+                                <button
+                                    onClick={handleExportCSV}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        fontSize: '0.9rem',
+                                        color: '#334155',
+                                        backgroundColor: 'transparent',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        fontWeight: '500',
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    <FileSpreadsheet size={16} className="text-emerald-500" />
+                                    <span>Export as CSV</span>
+                                </button>
+
+                                <button
+                                    onClick={handleExportPDF}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        fontSize: '0.9rem',
+                                        color: '#334155',
+                                        backgroundColor: 'transparent',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        fontWeight: '500',
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    <FileText size={16} className="text-red-500" />
+                                    <span>Export as PDF</span>
+                                </button>
+                            </div>
+                                <th style={styles.th}>Status</th>
+                                <th style={styles.th}>Visits</th>
+                                <th style={styles.th}>Last Seen</th>
+                                <th style={styles.th}>Next Appt</th>
+                                <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                            </tr>
+                </thead>
+                <tbody>
+                    {filteredPatients.map(patient => (
+                        <tr key={patient.id} style={styles.row} className="hover:bg-slate-50 group">
+                            <td style={styles.td}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                                        <User size={20} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontWeight: '600', color: '#0f172a' }}>{patient.name}</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>ID: #{1000 + patient.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style={styles.td}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#334155' }}>
+                                        <Mail size={14} className="text-slate-400" /> {patient.email}
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#334155' }}>
+                                        <Phone size={14} className="text-slate-400" /> {patient.phone}
+                                    </div>
+                                </div>
+                            </td>
+                            <td style={styles.td}>
+                                <span style={styles.statusBadge(patient.status)}>{patient.status}</span>
+                            </td>
+                            <td style={styles.td}>
+                                <div style={{ fontWeight: '600', color: '#0f172a', textAlign: 'center', width: 'fit-content', padding: '0 1rem' }}>{patient.totalVisits}</div>
+                            </td>
+                            <td style={styles.td}>
+                                <div style={{ color: '#64748b' }}>{patient.lastVisit}</div>
+                            </td>
+                            <td style={styles.td}>
+                                {patient.nextAppt !== '-' && patient.nextAppt !== 'Pending' ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0284c7', fontWeight: '500', fontSize: '0.85rem', backgroundColor: '#e0f2fe', padding: '0.25rem 0.5rem', borderRadius: '0.5rem', width: 'fit-content' }}>
+                                        <Calendar size={14} /> {patient.nextAppt}
+                                    </div>
+                                ) : (
+                                    <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.85rem' }}>{patient.nextAppt}</span>
+                                )}
+                            </td>
+                            <td style={{ ...styles.td, textAlign: 'right' }}>
+                                <Button variant="ghost" size="small" style={{ color: 'var(--color-primary)' }}>
+                                    <Eye size={18} className="mr-2" /> View History
+                                </Button>
+                            </td>
+                        </tr>
+                    ))}
+                    {filteredPatients.length === 0 && (
+                        <tr>
+                            <td colSpan="7" style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                                    <Search size={48} style={{ opacity: 0.5 }} />
+                                    <p>No patients found matching "{searchTerm}"</p>
+                                </div>
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+            </Card >
+
+    {/* Add Patient Modal */ }
+{
+    isModalOpen && createPortal(
+        <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem'
+        }} onClick={() => setIsModalOpen(false)}>
+            <div
+                onClick={e => e.stopPropagation()}
+                className="animate-fade-in"
+                style={{
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    width: '100%',
+                    maxWidth: '500px',
+                    overflow: 'hidden'
+                }}
+            >
+                <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a' }}>Add New Patient</h2>
+                        <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Create a new patient record</p>
+                    </div>
+                    <button onClick={() => setIsModalOpen(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
+                </div>
+
+                <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={styles.inputGroup}>
+                        <label style={styles.inputLabel}>Full Name</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. Jane Doe"
+                            value={newPatient.name}
+                            onChange={e => setNewPatient({ ...newPatient, name: e.target.value })}
+                            style={styles.modalInput}
+                            onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.backgroundColor = '#ffffff'; }}
+                            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.backgroundColor = '#f8fafc'; }}
+                        />
+                    </div>
+
+                    <div style={styles.inputGroup}>
+                        <label style={styles.inputLabel}>Phone Number</label>
+                        <input
+                            type="tel"
+                            placeholder="e.g. +91 99999 99999"
+                            value={newPatient.phone}
+                            onChange={e => setNewPatient({ ...newPatient, phone: e.target.value })}
+                            style={styles.modalInput}
+                            onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.backgroundColor = '#ffffff'; }}
+                            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.backgroundColor = '#f8fafc'; }}
+                        />
+                    </div>
+
+                    <div style={styles.inputGroup}>
+                        <label style={styles.inputLabel}>Email Address (Optional)</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. jane@example.com"
+                            value={newPatient.email}
+                            onChange={e => setNewPatient({ ...newPatient, email: e.target.value })}
+                            style={styles.modalInput}
+                            onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.backgroundColor = '#ffffff'; }}
+                            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.backgroundColor = '#f8fafc'; }}
+                        />
+                    </div>
+
+                    <div style={styles.inputGroup}>
+                        <label style={styles.inputLabel}>Notes (Optional)</label>
+                        <textarea
+                            placeholder="Medical history, allergies, etc."
+                            value={newPatient.notes}
+                            onChange={e => setNewPatient({ ...newPatient, notes: e.target.value })}
+                            style={{ ...styles.modalInput, minHeight: '100px', resize: 'vertical' }}
+                            onFocus={e => { e.target.style.borderColor = '#3b82f6'; e.target.style.backgroundColor = '#ffffff'; }}
+                            onBlur={e => { e.target.style.borderColor = '#e2e8f0'; e.target.style.backgroundColor = '#f8fafc'; }}
+                        />
+                    </div>
+                </div>
+
+                <div style={{ padding: '1.5rem', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '1rem', backgroundColor: '#f8fafc' }}>
+                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                    <Button variant="primary" onClick={handleAddPatient}>Add Record</Button>
+                </div>
+            </div>
+        </div>,
+        document.body
+    )
+}
+        </div >
+    );
+};
+
+export default ManagePatients;
