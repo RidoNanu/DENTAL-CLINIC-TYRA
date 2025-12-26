@@ -1,46 +1,50 @@
+const Brevo = require('@getbrevo/brevo');
 
-// Check environment variable at startup
-if (process.env.BREVO_API_KEY) {
+// Initialize API instance
+const apiInstance = new Brevo.TransactionalEmailsApi();
+const apiKey = process.env.BREVO_API_KEY;
+
+// Configure API key if present
+if (apiKey) {
+    apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, apiKey);
     console.log('[MAILER] Brevo API Initialized');
 } else {
     console.error('[MAILER] ❌ BREVO_API_KEY is missing in environment variables.');
 }
 
+/**
+ * Send an email using Brevo Node.js SDK
+ * @param {object} options
+ * @param {string|string[]} options.to - Recipient email(s)
+ * @param {string} options.subject - Email subject
+ * @param {string} options.html - Email body (HTML)
+ * @returns {Promise<boolean>} - True if successful, false otherwise
+ */
 const sendEmail = async ({ to, subject, html }) => {
     try {
-        if (!process.env.BREVO_API_KEY) {
-            console.error("[MAILER] ❌ Cancelled send: BREVO_API_KEY is missing.");
+        if (!apiKey) {
+            console.error('[MAILER] Cancelled send: BREVO_API_KEY is missing.');
             return false;
         }
 
-        console.log('[MAILER] Sending via Brevo API →', to);
+        console.log(`[MAILER] Sending via Brevo API: ${to}`);
 
-        const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-            method: "POST",
-            headers: {
-                "api-key": process.env.BREVO_API_KEY,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                sender: { email: "ridonanu5105@gmail.com", name: "Tyra Dentistree" },
-                to: [{ email: to }],
-                subject,
-                htmlContent: html
-            })
-        });
+        const sendSmtpEmail = new Brevo.SendSmtpEmail();
+        sendSmtpEmail.subject = subject;
+        sendSmtpEmail.htmlContent = html;
+        sendSmtpEmail.sender = { "name": "Tyra Dentistree", "email": "noreply@brevo.com" };
 
-        const data = await res.json();
+        // Handle both single string string and array of strings for 'to'
+        const recipients = Array.isArray(to) ? to : [to];
+        sendSmtpEmail.to = recipients.map(email => ({ email }));
 
-        if (!res.ok) {
-            console.error("[MAILER] ❌ Brevo API error:", data);
-            return false;
-        }
+        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
 
-        console.log("[MAILER] ✅ Email sent:", data.messageId || data);
+        console.log('[MAILER] Brevo API success. MessageId:', data.messageId);
         return true;
 
-    } catch (err) {
-        console.error("[MAILER] ❌ Email send exception:", err.message);
+    } catch (error) {
+        console.error('[MAILER] Brevo API error:', error.body || error.message);
         return false;
     }
 };
