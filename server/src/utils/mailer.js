@@ -31,7 +31,7 @@ const sendEmail = async ({ to, subject, html }) => {
         console.log(`[MAILER] 📧 Sending email to: ${to} | Subject: ${subject}`);
 
         const result = await resend.emails.send({
-            from: "Tyra Dentitree <onboarding@resend.dev>",
+            from: "Tyra Dentistree <ridonanu5105@gmail.com>",
             to,
             subject,
             html,
