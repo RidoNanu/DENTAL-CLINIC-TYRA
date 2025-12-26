@@ -68,6 +68,10 @@ app.get('/api/v1/health', (req, res) => {
 const publicRoutes = require('./routes/v1/public.routes');
 app.use('/api/v1/public', publicRoutes);
 
+// Debug routes
+const debugRoutes = require('./routes/debug.routes');
+app.use('/api/v1/debug', debugRoutes);
+
 // Rate limiting for API routes (100 requests per 15 minutes)
 app.use('/api/v1', apiLimiter);
 

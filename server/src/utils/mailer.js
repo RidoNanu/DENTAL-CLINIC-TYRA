@@ -4,7 +4,7 @@ const { Resend } = require('resend');
 const apiKey = process.env.RESEND_API_KEY;
 if (apiKey) {
     const maskedKey = apiKey.substring(0, 4) + '...' + apiKey.substring(apiKey.length - 4);
-    console.log(`[MAILER] Resend API Client Initialized. Key: ${maskedKey}`);
+    console.log(`[MAILER] ENV CHECK — RESEND KEY LOADED. Key: ${maskedKey}`);
 } else {
     console.error('[MAILER] ❌ FATAL: RESEND_API_KEY is missing from environment variables. Emails will fail.');
 }
