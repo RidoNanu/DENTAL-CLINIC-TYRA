@@ -56,6 +56,17 @@ const create = async (req, res, next) => {
     try {
         const appointment = await appointmentService.create(req.body);
 
+        // Send confirmation email (async/non-blocking)
+        if (appointment.patients && appointment.patients.email) {
+            emailService.sendAppointmentRequested(
+                appointment.patients.name,
+                appointment.patients.email,
+                appointment.appointment_at,
+                appointment.services?.name || 'Dental Service',
+                appointment.shift
+            ).catch(err => console.error('[EMAIL JOB] Failed to send admin creation email:', err.message));
+        }
+
         res.status(201).json({
             success: true,
             data: appointment,
