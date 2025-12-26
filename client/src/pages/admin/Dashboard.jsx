@@ -458,7 +458,15 @@ const Dashboard = () => {
         const date = new Date(apt.appointment_at);
 
         // Handle mixed singular/plural aliases from different endpoints
-        const patientName = apt.patient?.name || apt.patients?.name || 'Unknown';
+        let patientName = apt.patient?.name || apt.patients?.name || 'Unknown';
+
+        // Check for "Booked as:" override in notes
+        if (apt.notes) {
+            const bookedAsMatch = apt.notes.match(/Booked as: (.*)/);
+            if (bookedAsMatch && bookedAsMatch[1]) {
+                patientName = bookedAsMatch[1].trim();
+            }
+        }
 
         return {
             id: apt.id,

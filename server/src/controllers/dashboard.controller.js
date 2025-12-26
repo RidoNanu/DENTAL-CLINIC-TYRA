@@ -117,6 +117,7 @@ const getDashboardStats = async (req, res) => {
                     id,
                     appointment_at,
                     status,
+                    notes,
                     shift,
                     patient:patient_id (
                         name
