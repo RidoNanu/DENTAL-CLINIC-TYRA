@@ -378,6 +378,35 @@ const BookAppointment = ({ isModal = false, onClose }) => {
                                 </div>
                             </div>
 
+                            {/* Email Confirmation Info Card */}
+                            <div style={{
+                                backgroundColor: '#e0f2fe',
+                                padding: '1.5rem',
+                                borderRadius: '16px',
+                                marginBottom: '2rem',
+                                textAlign: 'left',
+                                border: '2px solid #bae6fd',
+                                display: 'flex',
+                                gap: '1rem',
+                                alignItems: 'flex-start'
+                            }}>
+                                <Mail size={24} style={{ color: '#0284c7', marginTop: '0.25rem', flexShrink: 0 }} />
+                                <div>
+                                    <h3 style={{ fontSize: '1.05rem', fontWeight: '700', marginBottom: '0.5rem', color: '#0369a1' }}>
+                                        Confirmation Email Sent
+                                    </h3>
+                                    <p style={{ fontSize: '0.95rem', color: '#075985', marginBottom: '0.5rem', lineHeight: '1.5' }}>
+                                        We’ve sent a confirmation email to your email address.
+                                        Please also check your Spam or Promotions folder if you don’t see it.
+                                    </p>
+                                    {patientDetails.email && (
+                                        <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#0284c7', marginTop: '0.5rem' }}>
+                                            Sent to: {patientDetails.email}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <Button onClick={() => navigate('/')} variant="outline" style={{ minWidth: '140px' }}>
                                     Go Home
