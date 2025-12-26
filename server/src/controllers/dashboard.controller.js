@@ -12,15 +12,23 @@ const supabase = require('../lib/supabaseClient');
  */
 const getDashboardStats = async (req, res) => {
     try {
-        // Get today's date range
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        // Get today's date range in IST (Asia/Kolkata)
+        // We need to construct the timestamp that corresponds to 00:00:00 IST
+        const now = new Date();
+        const istDateString = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
+
+        // Start of today in IST
+        const todayCommon = new Date(`${istDateString}T00:00:00+05:30`);
+        const todayISO = todayCommon.toISOString();
+
+        // Start of tomorrow in IST
+        const tomorrowCommon = new Date(todayCommon);
+        tomorrowCommon.setDate(tomorrowCommon.getDate() + 1);
+        const tomorrowISO = tomorrowCommon.toISOString();
 
         // Get yesterday's date for comparison
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayCommon = new Date(todayCommon);
+        yesterdayCommon.setDate(yesterdayCommon.getDate() - 1);
 
         // Get month start
         const monthStart = new Date();
@@ -47,8 +55,8 @@ const getDashboardStats = async (req, res) => {
             supabase
                 .from('appointments')
                 .select('*', { count: 'exact', head: true })
-                .gte('appointment_at', today.toISOString())
-                .lt('appointment_at', tomorrow.toISOString())
+                .gte('appointment_at', todayISO)
+                .lt('appointment_at', tomorrowISO)
                 .eq('shift', 'morning')
                 .neq('status', 'cancelled'),
 
@@ -56,8 +64,8 @@ const getDashboardStats = async (req, res) => {
             supabase
                 .from('appointments')
                 .select('*', { count: 'exact', head: true })
-                .gte('appointment_at', today.toISOString())
-                .lt('appointment_at', tomorrow.toISOString())
+                .gte('appointment_at', todayISO)
+                .lt('appointment_at', tomorrowISO)
                 .eq('shift', 'evening')
                 .neq('status', 'cancelled'),
 
@@ -72,7 +80,7 @@ const getDashboardStats = async (req, res) => {
                 .from('appointments')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'pending')
-                .gte('created_at', today.toISOString()),
+                .gte('created_at', todayISO),
 
             // 5. Total Patients Count
             supabase
