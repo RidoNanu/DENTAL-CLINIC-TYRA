@@ -993,17 +993,8 @@ const Dashboard = () => {
                                                 const color = statusColors[apt.status] || statusColors.pending;
 
                                                 return (
-                                                    <div key={apt.id} style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'space-between',
-                                                        padding: '1rem',
-                                                        backgroundColor: 'white',
-                                                        border: '1px solid #e2e8f0',
-                                                        borderRadius: '0.75rem',
-                                                        transition: 'all 0.2s'
-                                                    }} className="hover:shadow-sm">
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    <div key={apt.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-slate-200 rounded-xl transition-all hover:shadow-sm gap-4">
+                                                        <div className="flex items-center gap-4 w-full sm:w-auto">
                                                             <div style={{
                                                                 width: '40px',
                                                                 height: '40px',
@@ -1055,8 +1046,10 @@ const Dashboard = () => {
                                                                     borderColor: '#16a34a',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
+                                                                    justifyContent: 'center',
                                                                     gap: '0.25rem'
                                                                 }}
+                                                                className="w-full sm:w-auto"
                                                                 disabled={updatingAppointment === apt.id}
                                                                 onClick={() => handleComplete(apt.id)}
                                                             >
