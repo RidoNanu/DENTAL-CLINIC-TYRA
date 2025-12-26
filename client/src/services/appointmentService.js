@@ -33,8 +33,8 @@ export const getAppointments = async ({ page, limit, startDate, endDate } = {}) 
  * @returns {Promise<Array>} List of appointments for that date
  */
 export const getAppointmentsByDate = async (date) => {
-    const startDate = `${date}T00:00:00.000Z`;
-    const endDate = `${date}T23:59:59.999Z`;
+    const startDate = `${date}T00:00:00+05:30`;
+    const endDate = `${date}T23:59:59+05:30`;
 
     const response = await apiClient.get('/appointments', {
         startDate,
@@ -51,8 +51,8 @@ export const getAppointmentsByDate = async (date) => {
  * @returns {Promise<Array>} List of appointments in the range
  */
 export const getAppointmentsByDateRange = async (start, end) => {
-    const startDate = `${start}T00:00:00.000Z`;
-    const endDate = `${end}T23:59:59.999Z`;
+    const startDate = `${start}T00:00:00+05:30`;
+    const endDate = `${end}T23:59:59+05:30`;
 
     const response = await apiClient.get('/appointments', {
         startDate,

@@ -104,7 +104,10 @@ const Dashboard = () => {
         try {
             setModalLoading(true);
             setModalError(null);
-            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            setModalLoading(true);
+            setModalError(null);
+            // Fix: Use IST date explicitly
+            const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD in IST
             const appointments = await getAppointmentsByDate(today);
             setTodayAppointments(appointments);
         } catch (err) {
@@ -1016,7 +1019,16 @@ const Dashboard = () => {
                                                                 {apt.token_number || '-'}
                                                             </div>
                                                             <div>
-                                                                <h4 style={{ fontWeight: '600', color: '#0f172a', marginBottom: '0.1rem' }}>{apt.patients?.name || 'Unknown Patient'}</h4>
+                                                                <h4 style={{ fontWeight: '600', color: '#0f172a', marginBottom: '0.1rem' }}>
+                                                                    {(() => {
+                                                                        let displayName = apt.patients?.name || 'Unknown Patient';
+                                                                        if (apt.notes) {
+                                                                            const match = apt.notes.match(/Booked as: (.*)/);
+                                                                            if (match && match[1]) displayName = match[1].trim();
+                                                                        }
+                                                                        return displayName;
+                                                                    })()}
+                                                                </h4>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#64748b' }}>
                                                                     <span>{apt.services?.name || 'No Service'}</span>
                                                                     <span style={{
@@ -1143,7 +1155,14 @@ const Dashboard = () => {
                                     >
                                         <div style={{ flex: 1 }}>
                                             <div style={{ fontWeight: '600', color: '#0f172a', marginBottom: '0.5rem' }}>
-                                                {apt.patients?.name || 'Unknown Patient'}
+                                                {(() => {
+                                                    let displayName = apt.patients?.name || 'Unknown Patient';
+                                                    if (apt.notes) {
+                                                        const match = apt.notes.match(/Booked as: (.*)/);
+                                                        if (match && match[1]) displayName = match[1].trim();
+                                                    }
+                                                    return displayName;
+                                                })()}
                                             </div>
                                             <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#64748b' }}>
                                                 <span>
