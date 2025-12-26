@@ -27,24 +27,31 @@ const sendEmail = async ({ to, subject, html }) => {
             return false;
         }
 
-        console.log(`[MAILER] Sending via Brevo API: ${to}`);
+        console.log("[MAILER] Sending via Brevo API:", to);
 
-        const sendSmtpEmail = new Brevo.SendSmtpEmail();
-        sendSmtpEmail.subject = subject;
-        sendSmtpEmail.htmlContent = html;
-        sendSmtpEmail.sender = { "name": "Tyra Dentistree", "email": "noreply@brevo.com" };
+        const emailData = {
+            sender: {
+                name: "Tyra Dentistree",
+                email: "ridonanu5105@gmail.com"
+            },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html
+        };
 
-        // Handle both single string string and array of strings for 'to'
-        const recipients = Array.isArray(to) ? to : [to];
-        sendSmtpEmail.to = recipients.map(email => ({ email }));
+        const response = await apiInstance.sendTransacEmail(emailData);
 
-        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-
-        console.log('[MAILER] Brevo API success. MessageId:', data.messageId);
+        console.log("[MAILER] Brevo API response:", JSON.stringify(response, null, 2));
         return true;
 
     } catch (error) {
-        console.error('[MAILER] Brevo API error:', error.body || error.message);
+        console.error("[MAILER] Brevo API ERROR");
+
+        if (error.response) {
+            console.error(error.response.text);
+        } else {
+            console.error(error.message);
+        }
         return false;
     }
 };
