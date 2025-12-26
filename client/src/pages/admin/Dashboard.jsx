@@ -178,7 +178,7 @@ const Dashboard = () => {
             console.log('🔍 Fetching time slots for:', { serviceId, date });
 
             // Call public availability API
-            const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/v1/public/availability?start=${date}&end=${date}&service_id=${serviceId}`;
+            const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/public/availability?start=${date}&end=${date}&service_id=${serviceId}`;
             console.log('📡 API URL:', apiUrl);
 
             const response = await fetch(apiUrl);
