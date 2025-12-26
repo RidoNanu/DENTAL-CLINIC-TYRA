@@ -9,8 +9,8 @@ if (apiKey) {
     console.error('[MAILER] ❌ FATAL: RESEND_API_KEY is missing from environment variables. Emails will fail.');
 }
 
-// Initialize Resend with the key (or undefined, which might throw later if used)
-const resend = new Resend(apiKey);
+// Initialize Resend with the key (if present)
+const resend = apiKey ? new Resend(apiKey) : null;
 
 /**
  * Send an email using Resend API
@@ -21,9 +21,9 @@ const resend = new Resend(apiKey);
  * @returns {Promise<boolean>} - True if sent successfully, false otherwise
  */
 const sendEmail = async ({ to, subject, html }) => {
-    // Fail fast if no key
-    if (!apiKey) {
-        console.error('[MAILER] Attempted to send email but RESEND_API_KEY is missing.');
+    // Fail fast if no key or client
+    if (!apiKey || !resend) {
+        console.error('[MAILER] Attempted to send email but RESEND_API_KEY is missing or invalid.');
         return false;
     }
 
