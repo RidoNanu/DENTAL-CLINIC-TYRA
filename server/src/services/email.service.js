@@ -5,46 +5,16 @@
  * Supports development mode (console log) if SMTP credentials are missing.
  */
 
-const nodemailer = require('nodemailer');
+/**
+ * Email Service
+ * 
+ * Handles sending transactional emails using Resend.
+ */
+
+const { sendEmail } = require('../utils/mailer');
 const { generateActionToken } = require('../utils/tokenUtils');
 const clinicSettingsService = require('./clinicSettings.service');
 
-// Helper to determine if we can send real emails
-const isMailConfigured = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-
-// Create transporter
-const transporter = isMailConfigured ? nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT || 587,
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-}) : null;
-
-/**
- * Send an email
- * @param {string} to - Recipient email
- * @param {string} subject - Email subject
- * @param {string} html - Email body (HTML)
- */
-const sendEmail = async (to, subject, html) => {
-    try {
-        if (isMailConfigured && transporter) {
-            await transporter.sendMail({
-                from: process.env.SMTP_FROM || '"Tyra Dentistree" <noreply@tyradentistree.com>',
-                to,
-                subject,
-                html,
-            });
-        }
-        // Email sent (or skipped in dev mode without SMTP config)
-    } catch (error) {
-        // Log error but do NOT throw to prevent blocking the API response
-        console.error(`[EMAIL ERROR] Failed to send email to ${to}:`, error.message);
-    }
-};
 
 /**
  * Format date and time for email display
@@ -233,7 +203,11 @@ const sendAppointmentRequested = async (patientName, patientEmail, appointmentDa
         </body>
         </html>
     `;
-    await sendEmail(patientEmail, subject, html);
+    await sendEmail({
+        to: patientEmail,
+        subject,
+        html
+    });
 };
 
 /**
@@ -427,7 +401,11 @@ const sendAppointmentConfirmed = async (patientName, patientEmail, appointmentDa
         </body>
         </html>
     `;
-    await sendEmail(patientEmail, subject, html);
+    await sendEmail({
+        to: patientEmail,
+        subject,
+        html
+    });
 };
 
 /**
@@ -565,7 +543,11 @@ const sendAppointmentCancelled = async (patientName, patientEmail, appointmentDa
         </body>
         </html>
     `;
-    await sendEmail(patientEmail, subject, html);
+    await sendEmail({
+        to: patientEmail,
+        subject,
+        html
+    });
 };
 
 module.exports = {
