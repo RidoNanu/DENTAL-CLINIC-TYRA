@@ -1,40 +1,74 @@
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+// Get API Key from environment
+const apiKey = process.env.BREVO_API_KEY;
+
+// Startup log with masked key
+if (apiKey) {
+    const maskedKey = apiKey.substring(0, 4) + '...' + apiKey.substring(apiKey.length - 4);
+    console.log(`[MAILER] Brevo API Initialized. Key: ${maskedKey}`);
+} else {
+    console.error('[MAILER] ❌ FATAL: BREVO_API_KEY is missing. Emails will fail.');
+}
 
 /**
- * Send an email using Brevo SMTP
- * @param {object} options - { to, subject, html }
+ * Send an email using Brevo Transactional Email API
+ * @param {object} options
+ * @param {string|string[]} options.to - Recipient email(s)
+ * @param {string} options.subject - Email subject
+ * @param {string} options.html - Email body (HTML)
  * @returns {Promise<boolean>} - True if successful, false otherwise
  */
 const sendEmail = async ({ to, subject, html }) => {
     try {
+        if (!apiKey) {
+            console.error('[MAILER] Cancelled send: BREVO_API_KEY is missing.');
+            return false;
+        }
+
         if (!to || !subject || !html) {
             console.error('[MAILER] Missing required fields (to, subject, or html).');
             return false;
         }
 
-        console.log(`[MAILER] Sending via Brevo SMTP to: ${to} | Subject: ${subject}`);
+        // Normalize 'to' to an array of objects for Brevo
+        const recipientList = Array.isArray(to) ? to : [to];
+        const formattedTo = recipientList.map(email => ({ email }));
 
-        const info = await transporter.sendMail({
-            from: process.env.SMTP_FROM || '"Tyra Dentistree" <hajmola5105@gmail.com>',
-            to,
-            subject,
-            html,
+        console.log(`[MAILER] Sending via Brevo API to: ${recipientList.join(', ')} | Subject: ${subject}`);
+
+        const payload = {
+            sender: {
+                name: "Tyra Dentistree",
+                email: "no-reply@brevo.dev"
+            },
+            to: formattedTo,
+            subject: subject,
+            htmlContent: html
+        };
+
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
+            headers: {
+                'api-key': apiKey,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            timeout: 10000 // 10s timeout
         });
 
-        console.log(`[MAILER] Email sent successfully. MessageId: ${info.messageId}`);
+        console.log(`[MAILER] Email sent successfully. MessageId: ${response.data.messageId}`);
         return true;
+
     } catch (error) {
-        console.error('[MAILER] ❌ Email failed:', error.message);
+        // Handle Axios errors gracefully
+        const errorMsg = error.response?.data?.message || error.message;
+        console.error(`[MAILER] Email failed: ${errorMsg}`);
+
+        // Log full error details in non-production for debugging
+        if (process.env.NODE_ENV !== 'production' && error.response) {
+            console.error('[MAILER] Full Error Response:', JSON.stringify(error.response.data, null, 2));
+        }
+
         return false;
     }
 };
