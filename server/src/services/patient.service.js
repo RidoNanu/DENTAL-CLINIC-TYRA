@@ -141,7 +141,10 @@ const findOrCreate = async ({ name, email, phone, date_of_birth, gender, notes }
 
         // Build update object with new data
         const updateData = {};
-        if (name && name !== existingPatient.name) updateData.name = name;
+        // CRITICAL FIX: Do NOT update the name automatically. This preserves the original account holder's name.
+        // If a new booking has a different name, we will handle it in the controller by adding a note.
+        // if (name && name !== existingPatient.name) updateData.name = name; 
+
         if (email && email !== existingPatient.email) updateData.email = email;
         if (phone && phone !== existingPatient.phone) updateData.phone = phone;
         if (date_of_birth && date_of_birth !== existingPatient.date_of_birth) updateData.date_of_birth = date_of_birth;

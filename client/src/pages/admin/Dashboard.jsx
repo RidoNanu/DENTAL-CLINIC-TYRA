@@ -456,10 +456,14 @@ const Dashboard = () => {
     // Format pending appointments from API data
     const pendingAppointments = dashboardData ? dashboardData.pendingAppointments.map(apt => {
         const date = new Date(apt.appointment_at);
+
+        // Handle mixed singular/plural aliases from different endpoints
+        const patientName = apt.patient?.name || apt.patients?.name || 'Unknown';
+
         return {
             id: apt.id,
-            patient: apt.patient?.name || 'Unknown',
-            treatment: apt.service?.name || 'No service',
+            patient: patientName,
+            treatment: apt.service?.name || apt.services?.name || 'No service',
             date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             shift: apt.shift ? (apt.shift.charAt(0).toUpperCase() + apt.shift.slice(1) + ' Shift') : ''
         };
@@ -589,7 +593,7 @@ const Dashboard = () => {
 
                     return (
                         <Card
-                            key={index}
+                            key={stat.label}
                             style={{
                                 ...styles.kpiCard,
                                 cursor: isClickable ? 'pointer' : 'default',

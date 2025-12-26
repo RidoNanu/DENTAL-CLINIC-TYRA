@@ -119,12 +119,20 @@ const createPublicAppointment = async (req, res, next) => {
         });
 
         // 2. Create appointment
+
+        // Handling Name Mismatch (Booking for someone else)
+        let finalNotes = notes || '';
+        if (patient.name && patientRecord.name && patient.name.trim().toLowerCase() !== patientRecord.name.trim().toLowerCase()) {
+            const bookingNote = `Booked as: ${patient.name}`;
+            finalNotes = finalNotes ? `${finalNotes}\n${bookingNote}` : bookingNote;
+        }
+
         // FORCE 'pending' status - ignoring any status sent from frontend
         const appointmentData = {
             patient_id: patientRecord.id,
             service_id,
             appointment_at,
-            notes: notes || null,
+            notes: finalNotes || null,
             status: 'pending', // Hardcoded for security
             shift: shift || null
         };
