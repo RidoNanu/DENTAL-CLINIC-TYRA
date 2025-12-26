@@ -396,8 +396,8 @@ const BookAppointment = ({ isModal = false, onClose }) => {
                                         Confirmation Email Sent
                                     </h3>
                                     <p style={{ fontSize: '0.95rem', color: '#075985', marginBottom: '0.5rem', lineHeight: '1.5' }}>
-                                        We’ve sent a confirmation email to your email address.
-                                        Please also check your Spam or Promotions folder if you don’t see it.
+                                        A confirmation email has been sent to your email address.
+                                        If you don’t see it in your inbox, please check your Spam or Promotions folder.
                                     </p>
                                     {patientDetails.email && (
                                         <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#0284c7', marginTop: '0.5rem' }}>
